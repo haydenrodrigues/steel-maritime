@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}PORTS // DEMURRAGE_OPT{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>PORTS</h1>
+    <p>Port database // Congestion metrics</p>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Port</th>
+                        <th>Country</th>
+                        <th>Code</th>
+                        <th>Berths</th>
+                        <th>Max Draft</th>
+                        <th>Handling Rate</th>
+                        <th>Avg Wait</th>
+                        <th>Congestion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for port in ports %}
+                    <tr>
+                        <td>{{ port.name }}</td>
+                        <td class="text-muted">{{ port.country }}</td>
+                        <td><code>{{ port.code }}</code></td>
+                        <td>{{ port.num_berths }}</td>
+                        <td>{{ port.max_draft }} m</td>
+                        <td>{{ "{:,.0f}".format(port.cargo_handling_rate or 0) }} MT/d</td>
+                        <td>{{ port.avg_berth_wait_hours }}h</td>
+                        <td>
+                            <span class="risk-badge {% if port.avg_congestion_level < 0.5 %}risk-low{% elif port.avg_congestion_level < 0.7 %}risk-moderate{% else %}risk-high{% endif %}">
+                                {{ (port.avg_congestion_level * 100)|int }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

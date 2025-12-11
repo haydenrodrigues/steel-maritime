@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DEMURRAGE_OPT{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #0a0a0a;
+            --bg-dark: #111111;
+            --bg-card: #1a1a1a;
+            --border-brutal: #2a2a2a;
+            --text-white: #ffffff;
+            --text-gray: #888888;
+            --accent-red: #ff3333;
+            --accent-yellow: #ffcc00;
+            --accent-green: #00ff88;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background: var(--bg-dark);
+            min-height: 100vh;
+            width: 280px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid var(--border-brutal);
+            padding: 0;
+        }
+        
+        .sidebar .brand {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--border-brutal);
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        
+        .sidebar .brand span {
+            color: var(--accent-red);
+        }
+        
+        .sidebar .nav {
+            padding: 1rem 0;
+        }
+        
+        .sidebar .nav-link {
+            color: var(--text-gray);
+            padding: 1rem 1.5rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-left: 3px solid transparent;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .sidebar .nav-link:hover {
+            color: var(--text-white);
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .sidebar .nav-link.active {
+            color: var(--text-white);
+            border-left-color: var(--accent-red);
+            background: rgba(255,51,51,0.05);
+        }
+        
+        .sidebar .nav-link i {
+            font-size: 1rem;
+            width: 20px;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 3rem;
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-brutal);
+        }
+        
+        .page-header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            margin: 0;
+            line-height: 1;
+        }
+        
+        .page-header p {
+            font-family: 'Space Mono', monospace;
+            color: var(--text-gray);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 1rem;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-brutal);
+            border-radius: 0;
+            box-shadow: none;
+        }
+        
+        .card:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--text-gray);
+        }
+        
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--border-brutal);
+            padding: 1.5rem;
+        }
+        
+        .card-header h5 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-gray);
+            margin: 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .stat-card {
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-red);
+        }
+        
+        .stat-card.accent-yellow::before { background: var(--accent-yellow); }
+        .stat-card.accent-green::before { background: var(--accent-green); }
+        .stat-card.accent-white::before { background: var(--text-white); }
+        
+        .stat-value {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 2.5rem;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-gray);
+        }
+        
+        .risk-badge {
+            font-family: 'Space Mono', monospace;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: 0;
+            font-weight: 700;
+        }
+        
+        .risk-low { 
+            background: var(--accent-green); 
+            color: var(--bg-black); 
+        }
+        .risk-moderate { 
+            background: var(--accent-yellow); 
+            color: var(--bg-black); 
+        }
+        .risk-high { 
+            background: var(--accent-red); 
+            color: var(--text-white); 
+        }
+        .risk-critical { 
+            background: var(--text-white); 
+            color: var(--bg-black);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .btn-primary {
+            background: var(--text-white);
+            color: var(--bg-black);
+            border: none;
+            border-radius: 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 1rem 2rem;
+            font-weight: 700;
+            transition: all 0.15s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-red);
+            color: var(--text-white);
+        }
+        
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--text-white);
+            border: 1px solid var(--border-brutal);
+            border-radius: 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--text-white);
+            color: var(--bg-black);
+            border-color: var(--text-white);
+        }
+        
+        .table {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-white);
+        }
+        
+        .table th {
+            background: transparent;
+            border-bottom: 1px solid var(--border-brutal);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-gray);
+            font-weight: 400;
+            padding: 1rem 0.75rem;
+        }
+        
+        .table td {
+            border-bottom: 1px solid var(--border-brutal);
+            padding: 1rem 0.75rem;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .form-control, .form-select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-brutal);
+            border-radius: 0;
+            color: var(--text-white);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: var(--bg-dark);
+            border-color: var(--text-white);
+            box-shadow: none;
+            color: var(--text-white);
+        }
+        
+        .form-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+        }
+        
+        .prediction-result {
+            background: var(--bg-dark);
+            border: 1px solid var(--accent-red);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .recommendation-card {
+            background: var(--bg-dark);
+            border-left: 4px solid var(--accent-green);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .recommendation-card.priority-high {
+            border-left-color: var(--accent-red);
+        }
+        
+        .recommendation-card.priority-medium {
+            border-left-color: var(--accent-yellow);
+        }
+        
+        .recommendation-card p {
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        
+        .badge {
+            border-radius: 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.4rem 0.6rem;
+        }
+        
+        .badge.bg-primary { background: var(--text-white) !important; color: var(--bg-black); }
+        .badge.bg-secondary { background: var(--border-brutal) !important; color: var(--text-gray); }
+        .badge.bg-success { background: var(--accent-green) !important; color: var(--bg-black); }
+        .badge.bg-warning { background: var(--accent-yellow) !important; color: var(--bg-black); }
+        .badge.bg-danger { background: var(--accent-red) !important; }
+        .badge.bg-info { background: var(--text-gray) !important; color: var(--bg-black); }
+        
+        .alert {
+            border-radius: 0;
+            border: 1px solid;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+        }
+        
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+        
+        .alert-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-gray);
+            color: var(--text-white);
+        }
+        
+        .progress {
+            background: var(--bg-dark);
+            border-radius: 0;
+            height: 4px;
+        }
+        
+        .progress-bar {
+            background: var(--accent-red);
+        }
+        
+        .progress-bar.bg-success { background: var(--accent-green) !important; }
+        .progress-bar.bg-warning { background: var(--accent-yellow) !important; }
+        .progress-bar.bg-danger { background: var(--accent-red) !important; }
+        
+        .list-group-item {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-brutal);
+            color: var(--text-white);
+            padding: 1rem 0;
+        }
+        
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+        
+        .accordion-item {
+            background: transparent;
+            border: 1px solid var(--border-brutal);
+            margin-bottom: -1px;
+        }
+        
+        .accordion-button {
+            background: var(--bg-card);
+            color: var(--text-white);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            padding: 1rem 1.5rem;
+            box-shadow: none;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: var(--bg-dark);
+            color: var(--text-white);
+        }
+        
+        .accordion-button::after {
+            filter: invert(1);
+        }
+        
+        .accordion-body {
+            background: var(--bg-dark);
+            padding: 1.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .text-muted {
+            color: var(--text-gray) !important;
+        }
+        
+        .text-danger {
+            color: var(--accent-red) !important;
+        }
+        
+        .text-success {
+            color: var(--accent-green) !important;
+        }
+        
+        .display-4 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+        }
+        
+        code {
+            font-family: 'Space Mono', monospace;
+            background: var(--bg-dark);
+            color: var(--accent-yellow);
+            padding: 0.2rem 0.4rem;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-brutal);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-gray);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-brutal);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+            .page-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+    {% block extra_styles %}{% endblock %}
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="brand">
+            <span>//</span> DEMURRAGE<br>
+            &nbsp;&nbsp;&nbsp;OPTIMIZER
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="/">
+                    <i class="bi bi-grid-3x3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'voyage_planning' %}active{% endif %}" href="/voyage/plan">
+                    <i class="bi bi-cursor"></i> Voyage Plan
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}" href="/analytics">
+                    <i class="bi bi-bar-chart"></i> Analytics
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'fleet_management' %}active{% endif %}" href="/fleet">
+                    <i class="bi bi-layers"></i> Fleet
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'port_management' %}active{% endif %}" href="/ports">
+                    <i class="bi bi-pin-map"></i> Ports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'ontology_view' %}active{% endif %}" href="/ontology">
+                    <i class="bi bi-diagram-2"></i> Ontology
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}VOYAGE PLAN // DEMURRAGE_OPT{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>VOYAGE<br>PLANNING</h1>
+    <p>Predict demurrage // Optimize arrival windows</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h5>// INPUT PARAMETERS</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="voyageForm">
+                    <div class="mb-4">
+                        <label class="form-label">Vessel</label>
+                        <select name="vessel_id" class="form-select" required>
+                            <option value="">-- SELECT VESSEL --</option>
+                            {% for vessel in vessels %}
+                            <option value="{{ vessel.id }}">
+                                {{ vessel.name }} / {{ vessel.vessel_type.name if vessel.vessel_type else '---' }} / {{ "{:,.0f}".format(vessel.dwt or 0) }} DWT
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Origin Port</label>
+                        <select name="origin_port_id" class="form-select">
+                            <option value="">-- OPTIONAL --</option>
+                            {% for port in ports %}
+                            <option value="{{ port.id }}">{{ port.code }} / {{ port.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Destination Port</label>
+                        <select name="dest_port_id" class="form-select" required>
+                            <option value="">-- SELECT DESTINATION --</option>
+                            {% for port in ports %}
+                            <option value="{{ port.id }}">{{ port.code }} / {{ port.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Cargo Type</label>
+                        <select name="cargo_type_id" class="form-select" required>
+                            <option value="">-- SELECT CARGO --</option>
+                            {% for cargo in cargo_types %}
+                            <option value="{{ cargo.id }}">
+                                {{ cargo.name }} / {{ cargo.category }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Cargo Volume (MT)</label>
+                        <input type="number" name="cargo_volume" class="form-control" placeholder="50000" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">ETA</label>
+                        <input type="datetime-local" name="eta" class="form-control" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        CALCULATE PREDICTION
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-7">
+        {% if prediction %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>// PREDICTION RESULT</h5>
+            </div>
+            <div class="card-body">
+                <div class="prediction-result">
+                    <div class="row g-4 text-center">
+                        <div class="col-md-6">
+                            <div class="display-4 text-white mb-2">{{ prediction.predicted_delay_hours }}h</div>
+                            <div class="text-muted" style="font-family: 'Space Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;">
+                                Predicted Delay
+                            </div>
+                            <div style="font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--text-gray); margin-top: 0.5rem;">
+                                Range: {{ prediction.delay_range.min }}h - {{ prediction.delay_range.max }}h
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="display-4 text-danger mb-2">${{ "{:,.0f}".format(prediction.predicted_cost) }}</div>
+                            <div class="text-muted" style="font-family: 'Space Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;">
+                                Estimated Cost
+                            </div>
+                            <div style="font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--text-gray); margin-top: 0.5rem;">
+                                Range: ${{ "{:,.0f}".format(prediction.cost_range.min) }} - ${{ "{:,.0f}".format(prediction.cost_range.max) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <span class="risk-badge risk-{{ prediction.risk_level }}">
+                            {{ prediction.risk_level }} RISK
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="card-header px-0">
+                        <h5>// RISK FACTORS</h5>
+                    </div>
+                    {% for factor, value in prediction.risk_factors.items() %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-family: 'Space Mono', monospace; font-size: 0.75rem; text-transform: uppercase;">{{ factor|replace('_', ' ') }}</span>
+                            <span style="font-family: 'Space Mono', monospace; font-size: 0.75rem;">{{ value }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar {% if value > 60 %}bg-danger{% elif value > 40 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 style="width: {{ value }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="alert alert-success mt-4 mb-0">
+                    <strong>// POTENTIAL SAVINGS:</strong> ${{ "{:,.0f}".format(prediction.potential_savings) }} with optimization
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>// RECOMMENDATIONS</h5>
+            </div>
+            <div class="card-body">
+                {% for rec in prediction.recommendations %}
+                <div class="recommendation-card priority-{{ rec.priority }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-{% if rec.priority == 'high' %}danger{% elif rec.priority == 'medium' %}warning{% else %}info{% endif %} mb-2">
+                                {{ rec.priority }}
+                            </span>
+                            <span class="badge bg-secondary mb-2 ms-1">{{ rec.category }}</span>
+                            <p>{{ rec.action }}</p>
+                        </div>
+                        <span class="text-success" style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">{{ rec.potential_saving }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if prediction.optimal_arrival_window %}
+                <div class="alert alert-info mt-3 mb-0">
+                    <strong>// OPTIMAL WINDOW:</strong><br>
+                    {{ prediction.optimal_arrival_window.start }} -> {{ prediction.optimal_arrival_window.end }}<br>
+                    <small class="text-muted">{{ prediction.optimal_arrival_window.reason }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div style="font-family: 'Space Mono', monospace; font-size: 4rem; color: var(--border-brutal); margin-bottom: 2rem;">//</div>
+                <p style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.1em;">
+                    INPUT VOYAGE PARAMETERS<br>TO GENERATE PREDICTION
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    const etaInput = document.querySelector('input[name="eta"]');
+    if (etaInput && !etaInput.value) {
+        etaInput.value = now.toISOString().slice(0, 16);
+    }
+});
+</script>
+{% endblock %}

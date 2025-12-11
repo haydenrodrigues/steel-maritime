@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}ONTOLOGY // DEMURRAGE_OPT{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>MARITIME<br>ONTOLOGY</h1>
+    <p>Domain knowledge model // Vessel-cargo-port relationships</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>// VESSEL TYPES</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="accordion accordion-flush" id="vesselTypesAccordion">
+                    {% for key, vessel in vessel_types.items() %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#vessel{{ loop.index }}">
+                                {{ vessel.name }}
+                                <span class="badge bg-secondary ms-2">{{ vessel.category }}</span>
+                            </button>
+                        </h2>
+                        <div id="vessel{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#vesselTypesAccordion">
+                            <div class="accordion-body">
+                                <div class="mb-3">
+                                    <div class="text-muted mb-1" style="font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;">Subtypes</div>
+                                    {% for subtype in vessel.subtypes %}
+                                    <span class="badge bg-secondary me-1 mb-1">{{ subtype }}</span>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="text-muted mb-1" style="font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;">Compatible Cargo</div>
+                                    {% for cargo in vessel.compatible_cargo %}
+                                    <span class="badge bg-success me-1 mb-1">{{ cargo|replace('_', ' ') }}</span>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div>
+                                    <div class="text-muted mb-1" style="font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;">Characteristics</div>
+                                    <div style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">
+                                        Rate Factor: {{ vessel.loading_characteristics.typical_rate_factor }}<br>
+                                        Weather: {{ vessel.loading_characteristics.weather_sensitivity }}<br>
+                                        Infrastructure: {{ vessel.loading_characteristics.port_infrastructure_needs }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>// PORT CAPABILITIES</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="accordion accordion-flush" id="portCapabilitiesAccordion">
+                    {% for key, capability in port_capabilities.items() %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#port{{ loop.index }}">
+                                {{ capability.name }}
+                            </button>
+                        </h2>
+                        <div id="port{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#portCapabilitiesAccordion">
+                            <div class="accordion-body">
+                                <div class="mb-3">
+                                    <div class="text-muted mb-1" style="font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;">Handles</div>
+                                    {% for cargo in capability.handles %}
+                                    <span class="badge bg-info me-1 mb-1">{{ cargo|replace('_', ' ') }}</span>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="text-muted mb-1" style="font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;">Equipment</div>
+                                    {% for equip in capability.equipment %}
+                                    <span class="badge bg-secondary me-1 mb-1">{{ equip|replace('_', ' ') }}</span>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div>
+                                    <div class="text-muted mb-1" style="font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;">Efficiency Factors</div>
+                                    <div style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">
+                                        {% for level, factor in capability.efficiency_factors.items() %}
+                                        {{ level }}: {{ factor }}x<br>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>// CARGO-VESSEL MATRIX</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Vessel Type</th>
+                                <th>Cargo Type</th>
+                                <th>Compatibility</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rel in cargo_relationships %}
+                            <tr>
+                                <td>{{ rel.vessel_type }}</td>
+                                <td>{{ rel.cargo_type }}</td>
+                                <td>
+                                    <span class="badge bg-success">{{ rel.compatibility }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}DASHBOARD // DEMURRAGE_OPT{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start">
+    <div>
+        <h1>DASHBOARD</h1>
+        <p>Fleet demurrage overview // Real-time metrics</p>
+    </div>
+    <a href="/voyage/plan" class="btn btn-primary">
+        + NEW VOYAGE
+    </a>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="stat-value">${{ "{:,.0f}".format(total_demurrage) }}</div>
+            <div class="stat-label">Total Demurrage</div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card accent-yellow">
+            <div class="stat-value">{{ total_voyages }}</div>
+            <div class="stat-label">Total Voyages</div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card accent-white">
+            <div class="stat-value">{{ avg_delay }}h</div>
+            <div class="stat-label">Avg Delay</div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card accent-green">
+            <div class="stat-value">{{ vessels|length }}</div>
+            <div class="stat-label">Fleet Size</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>// RECENT VOYAGES</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if voyages %}
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Vessel</th>
+                                <th>Route</th>
+                                <th>Cargo</th>
+                                <th>Delay</th>
+                                <th>Cost</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for voyage in voyages %}
+                            <tr>
+                                <td>{{ voyage.vessel.name }}</td>
+                                <td>
+                                    {% if voyage.origin_port %}{{ voyage.origin_port.code }}{% endif %}
+                                    <span class="text-muted">-></span>
+                                    {{ voyage.destination_port.code if voyage.destination_port else '---' }}
+                                </td>
+                                <td>{{ voyage.cargo_type.name if voyage.cargo_type else '---' }}</td>
+                                <td>{{ voyage.predicted_delay_hours|round(1) if voyage.predicted_delay_hours else 0 }}h</td>
+                                <td class="text-danger">${{ "{:,.0f}".format(voyage.predicted_demurrage_cost or 0) }}</td>
+                                <td>
+                                    <span class="badge bg-{% if voyage.status == 'completed' %}success{% elif voyage.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                                        {{ voyage.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <p class="text-muted mb-4" style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">NO VOYAGES RECORDED</p>
+                    <a href="/voyage/plan" class="btn btn-primary">PLAN VOYAGE</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>// FLEET</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for vessel in vessels[:5] %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ vessel.name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ vessel.vessel_type.name if vessel.vessel_type else '---' }}</small>
+                        </div>
+                        <span class="badge bg-secondary">{{ "{:,.0f}".format(vessel.dwt or 0) }} DWT</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="/fleet" class="btn btn-outline-primary w-100 mt-3">VIEW ALL</a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>// PORTS</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for port in ports[:5] %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ port.name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ port.country }}</small>
+                        </div>
+                        <span class="risk-badge {% if port.avg_congestion_level < 0.5 %}risk-low{% elif port.avg_congestion_level < 0.7 %}risk-moderate{% else %}risk-high{% endif %}">
+                            {{ (port.avg_congestion_level * 100)|int }}%
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="/ports" class="btn btn-outline-primary w-100 mt-3">VIEW ALL</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

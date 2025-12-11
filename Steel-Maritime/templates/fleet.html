@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}FLEET // DEMURRAGE_OPT{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>FLEET</h1>
+    <p>Vessel specifications // Demurrage rates</p>
+</div>
+
+<div class="row g-4">
+    {% for vessel in vessels %}
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0" style="color: var(--text-white);">{{ vessel.name }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge bg-primary">{{ vessel.vessel_type.name if vessel.vessel_type else '---' }}</span>
+                    <code class="ms-2">{{ vessel.imo_number }}</code>
+                </div>
+                
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td class="text-muted border-0 py-2">DWT</td>
+                        <td class="text-end border-0 py-2">{{ "{:,.0f}".format(vessel.dwt or 0) }} MT</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted border-0 py-2">LOA</td>
+                        <td class="text-end border-0 py-2">{{ vessel.loa or '---' }} m</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted border-0 py-2">Beam</td>
+                        <td class="text-end border-0 py-2">{{ vessel.beam or '---' }} m</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted border-0 py-2">Draft</td>
+                        <td class="text-end border-0 py-2">{{ vessel.draft or '---' }} m</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted border-0 py-2">Demurrage</td>
+                        <td class="text-end border-0 py-2 text-danger">${{ "{:,.0f}".format(vessel.demurrage_rate or 0) }}/day</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="card-footer bg-transparent border-top" style="border-color: var(--border-brutal) !important;">
+                <a href="/voyage/plan" class="btn btn-outline-primary btn-sm w-100">
+                    PLAN VOYAGE
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
